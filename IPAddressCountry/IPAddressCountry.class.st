@@ -43,18 +43,73 @@ IPAddressCountry class >> addressToInteger: object [
 	^ integer
 ]
 
+{ #category : #dataset }
+IPAddressCountry class >> createDatasetFromSource [
+	"Create the dataset that we use from its original source, http://software77.net/geo-ip 
+	in particular the zipped IPv4 CSV file with sorted ranges (IP address blocks).
+	Select the minimal information that we need and generate an efficient CSV file."
+
+	| zip ranges |
+	zip := ZnClient new get: 'http://software77.net/geo-ip/?DL=2'.
+	ranges := ((ZipArchive new readFrom: zip readStream) contentsOf: 'IpToCountry.csv')
+		in: [ :csvString | 
+			(NeoCSVReader on: (String cr join: (csvString lines reject: [ :line | line first = $# ])) readStream)
+				addIntegerField;
+				addIntegerField;
+				addIgnoredFields: 2;
+				addSymbolField;
+				addIgnoredFields: 2;
+				upToEnd ].
+	self csvFilename asFileReference
+		writeStreamDo: [ :out | 
+			(NeoCSVWriter on: out)
+				lineEndConvention: #lf;
+				fieldWriter: #raw;
+				writeHeader: #(start stop country);
+				nextPutAll: ranges ]
+]
+
+{ #category : #accessing }
+IPAddressCountry class >> csvFilename [
+	"The local and remote file name of the CSV data set that we expect"
+	
+	^ 'ip4-country.csv'
+]
+
+{ #category : #accessing }
+IPAddressCountry class >> precomputedCSVFileURL [
+	"The URL where a precomputed version of the CSV data set that we need normally exists."
+	
+	^ ('https://github.com/svenvc/IPAddressCountry/raw/master/dist/', self csvFilename) asUrl 
+]
+
 { #category : #'instance creation' }
 IPAddressCountry class >> readFrom: filename [
-	"Read from a CSV with field start,stop,code as in 3651886848,3651887103,BE"
-	"self readFrom: '/Users/sven/Tmp/geo-ip-country/GeoIPCountry.csv'."
-	
+	"Read from a sorted CSV file with fields start,stop,code as in 3651886848,3651887103,BE"
+
 	^ self new
-		data: (filename asFileReference readStreamDo: [ :stream |
+		data:
+			(filename asFileReference
+				readStreamDo: [ :stream | 
 					(NeoCSVReader on: stream)
 						recordClass: IPAddressRangeCountry;
-						addIntegerField: #start: ; addIntegerField: #stop: ; addSymbolField: #country: ;
+						addIntegerField: #start:;
+						addIntegerField: #stop:;
+						addSymbolField: #country:;
+						skipHeader;
 						upToEnd ]);
 		yourself
+]
+
+{ #category : #'instance creation' }
+IPAddressCountry class >> readFromCSVFile [
+	"Read from the standard CSV file, either locally cached or from a location where it exists precomputed"
+
+	| file |
+	file := self csvFilename asFileReference.
+	file exists
+		ifFalse: [ self precomputedCSVFileURL saveContentsToFile: file ].
+	^ self readFrom: file
 ]
 
 { #category : #accessing }

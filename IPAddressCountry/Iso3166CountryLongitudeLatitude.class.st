@@ -79,14 +79,12 @@ Iso3166CountryLongitudeLatitude class >> readFrom: filename [
 { #category : #'instance creation' }
 Iso3166CountryLongitudeLatitude class >> readFromCSVFile [
 	"Read from the standard CSV file, either locally cached or from a location where it exists precomputed"
-	
+
 	| file |
 	file := self csvFilename asFileReference.
-	file exists ifFalse: [ 
-		self precomputedCSVFileURL saveContentsToFile: file ].	
+	file exists
+		ifFalse: [ self precomputedCSVFileURL saveContentsToFile: file ].
 	^ self readFrom: file
-	
-	
 ]
 
 { #category : #accessing }
