@@ -1,0 +1,13 @@
+{
+	"commentStamp" : "SvenVanCaekenberghe 4/4/2011 19:40",
+	"super" : "Object",
+	"category" : "IPAddressCountry",
+	"classinstvars" : [ ],
+	"pools" : [ ],
+	"classvars" : [ ],
+	"instvars" : [
+		"data"
+	],
+	"name" : "IPAddressCountry",
+	"type" : "normal"
+}
