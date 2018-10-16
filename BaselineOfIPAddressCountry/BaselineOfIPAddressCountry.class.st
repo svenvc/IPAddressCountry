@@ -18,6 +18,6 @@ BaselineOfIPAddressCountry >> baselineOf: spec [
 		do: [ 
 			spec baseline: 'NeoCSV' with: [ spec repository: 'github://svenvc/NeoCSV:master/repository' ].
 			spec baseline: 'NeoJSON' with: [ spec repository: 'github://svenvc/NeoJSON:master/repository' ].
-			spec package: 'IPAddressCountry' with: [ spec requires: #('IPAddressCountry') ].
+			spec package: 'IPAddressCountry' with: [ spec requires: #('NeoCSV' 'NeoJSON') ].
 			spec group: 'default' with: #('IPAddressCountry') ]
 ]
