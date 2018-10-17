@@ -1,19 +1,19 @@
 "
-IPAddressCountry maps IP addresses to their country code.
-I hold a collection of IPAddressRangeCountry objects that I do a binary search on.
+IPAddressCountry maps IPv4 addresses to their country code.
+I hold a sorted array of IPAddressRangeCountry objects that I do a binary search on.
 
-I am constructed based on a CSV data file using my class' #readFrom:
-which expects lines like 3651886848,3651887103,BE or start,stop,code
+I am constructed based on a CSV data file, see my class side.
 
-You can download a version of this file from http://homepage.mac.com/svc/data/GeoIPCountry.csv.gz
+Example
 
-((IPAddressCountry readFrom: 'GeoIPCountry.csv') atAddress: '81.83.7.35') = #BE
+	IPAddressCountry readFromCSVFile atAddress: (SocketAddress fromDottedString: '81.83.7.35').
+	IPAddressCountry readFromCSVFile atAddress: #[81 83 7 35] asSocketAddress.
 
 Addresses can also be specified as #(81 83 7 35) for #atAddress: or as 1364395811 for #at:
 
 You should cache one instance of me.
 
-Based on data from http://www.maxmind.com/app/geolitecountry
+Based on data from http://software77.net/geo-ip
 
 This code is published under the http://en.wikipedia.org/wiki/MIT_License
 "
@@ -23,7 +23,7 @@ Class {
 	#instVars : [
 		'data'
 	],
-	#category : 'IPAddressCountry'
+	#category : #IPAddressCountry
 }
 
 { #category : #private }
@@ -52,19 +52,15 @@ IPAddressCountry class >> createDatasetFromSource [
 	| zip ranges |
 	zip := ZnClient new get: 'http://software77.net/geo-ip/?DL=2'.
 	ranges := ((ZipArchive new readFrom: zip readStream) contentsOf: 'IpToCountry.csv')
-		in: [ :csvString | 
-			(NeoCSVReader on: (String cr join: (csvString lines reject: [ :line | line first = $# ])) readStream)
-				addIntegerField;
-				addIntegerField;
-				addIgnoredFields: 2;
-				addSymbolField;
-				addIgnoredFields: 2;
+		in: [ :csvStringWithComments | | csvString |
+			csvString := String cr join: (csvStringWithComments lines reject: [ :line | line first = $# ]).
+			(NeoCSVReader on: csvString readStream)
+				addIntegerField; addIntegerField; addIgnoredFields: 2; addSymbolField; addIgnoredFields: 2;
 				upToEnd ].
 	self csvFilename asFileReference
 		writeStreamDo: [ :out | 
 			(NeoCSVWriter on: out)
-				lineEndConvention: #lf;
-				fieldWriter: #raw;
+				lineEndConvention: #lf; fieldWriter: #raw;
 				writeHeader: #(start stop country);
 				nextPutAll: ranges ]
 ]
@@ -124,7 +120,7 @@ IPAddressCountry >> at: integer ifAbsent: block [
 	"Return a country Symbol for an IP address specified as an Integer"
 
 	(integer between: 0 and: (2 raisedToInteger: 32) - 1)
-		ifFalse: [ ^ block value ].  
+		ifFalse: [ ^ block value ].
 	^ self data 
 		findBinary: [ :each | each compare: integer ] 
 		do: [ :each | each country ] 
@@ -134,9 +130,8 @@ IPAddressCountry >> at: integer ifAbsent: block [
 { #category : #accessing }
 IPAddressCountry >> atAddress: object [
 	"Return a country Symbol for an IP address specified as String or ByteArray"
-	
+
 	^ self at: (self class addressToInteger: object)
-	  
 ]
 
 { #category : #accessing }
@@ -144,7 +139,6 @@ IPAddressCountry >> atAddress: object ifAbsent: block [
 	"Return a country Symbol for an IP address specified as String or ByteArray"
 
 	^ self at: (self class addressToInteger: object) ifAbsent: block
-	  
 ]
 
 { #category : #private }

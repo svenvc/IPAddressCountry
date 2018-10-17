@@ -12,6 +12,8 @@ Example
 
 You should cache one instance of me.
 
+Based on data from https://mledoze.github.io/countries/ https://github.com/mledoze/countries
+
 This code is published under the http://en.wikipedia.org/wiki/MIT_License
 
 "
@@ -90,18 +92,18 @@ Iso3166CountryLongitudeLatitude class >> readFromCSVFile [
 { #category : #accessing }
 Iso3166CountryLongitudeLatitude >> at: countryCode [
 	"Return a Point (longitude@latitude) for the Symbol countryCode"
-	
+
 	^ self at: countryCode ifAbsent: [ nil ]
 ]
 
 { #category : #accessing }
 Iso3166CountryLongitudeLatitude >> at: countryCode ifAbsent: block [
 	"Return a Point (longitude@latitude) for the Symbol countryCode"
-	
+
 	^ self data at: countryCode ifAbsent: block
 ]
 
 { #category : #private }
 Iso3166CountryLongitudeLatitude >> data [
-	^ data ifNil: [ data := Dictionary new ]
+	^ data ifNil: [ data := IdentityDictionary new ]
 ]
