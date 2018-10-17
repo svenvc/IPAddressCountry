@@ -27,14 +27,16 @@ IPAddressRangeCountry class >> from: start to: stop country: countryCode [
 		start: start;
 		stop: stop;
 		country: countryCode;
-		yourself   
+		yourself
 ]
 
 { #category : #comparing }
 IPAddressRangeCountry >> compare: integer [
-	integer < start ifTrue: [ ^ -1 ].
-	integer > stop ifTrue: [ ^ 1 ].
-	^ 0   
+	integer < start
+		ifTrue: [ ^ -1 ].
+	integer > stop
+		ifTrue: [ ^ 1 ].
+	^ 0
 ]
 
 { #category : #accessing }
@@ -49,7 +51,7 @@ IPAddressRangeCountry >> country: anObject [
 
 { #category : #testing }
 IPAddressRangeCountry >> includes: integer [
-	^ (start <= integer) and: [ integer <= stop ]
+	^ integer between: start and: stop
 ]
 
 { #category : #accessing }
